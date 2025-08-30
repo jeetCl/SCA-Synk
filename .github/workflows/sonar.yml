@@ -26,6 +26,9 @@ jobs:
           restore-keys: ${{ runner.os }}-sonar
 
       - name: Build with Maven and run SonarQube
-        run: mvn clean verify sonar:sonar \
-          -Dsonar.projectKey=YOUR_PROJECT_KEY \
-          -Dsonar.host.url=http
+        run: |
+          cd jacoco-multimodule-maven
+          mvn clean verify sonar:sonar \
+            -Dsonar.projectKey=YOUR_PROJECT_KEY \
+            -Dsonar.host.url=http://localhost:9000 \
+            -Dsonar.token=${{ secrets.SONAR_TOKEN }}
