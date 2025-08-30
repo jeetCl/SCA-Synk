@@ -32,24 +32,15 @@ jobs:
           key: ${{ runner.os }}-sonar
           restore-keys: ${{ runner.os }}-sonar
 
-      - name: Cache Maven packages
-        uses: actions/cache@v4
-        with:
-          path: ~/.m2
-          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-          restore-keys: ${{ runner.os }}-m2
-
-      - name: Build and analyze with SonarCloud
-        working-directory: jacoco-multimodule-maven  # ✅ Use correct directory
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Required for PR decoration
+      - name: Install Sonar Scanner
         run: |
-          mvn -B clean verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
-            -Dsonar.projectKey=jeetcl_maven-sonarqube \
-            -Dsonar.projectKey=Maven-SonarQube \
-            -Dsonar.organization=jeetcl \
-            -Dsonar.host.url=https://sonarcloud.io \
-            -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+          curl -sSLo sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip
+          unzip sonar-scanner.zip -d $HOME
+          export PATH=$HOME/sonar-scanner-5.0.1.3006-linux/bin:$PATH
+          echo "$HOME/sonar-scanner-5.0.1.3006-linux/bin" >> $GITHUB_PATH
 
-          
+      - name: Build with Ant
+        run: |
+          ant -f AntSpringMVC/build.xml
+
+      - name: Run Sonar Sca
