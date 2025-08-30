@@ -47,4 +47,4 @@ jobs:
         run: |
           mvn -B clean verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
             -Dsonar.projectKey=jeetcl_maven-sonarqube \
-            -Dsonar.organization=https://sonarcloud.io/project/configuration/GitHubActions?id=jeetcl_maven-sonarqube \
+            -Dsonar.organization=https://sonarcloud.io/organizations/jeetcl \
