@@ -6,7 +6,7 @@ on:
       - master
   pull_request:
     types: [opened, synchronize, reopened]
-  workflow_dispatch: # ✅ Added manual trigger
+  workflow_dispatch: # ✅ Added manual trigger  #33
 
 jobs:
   build:
