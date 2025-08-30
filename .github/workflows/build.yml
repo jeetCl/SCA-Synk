@@ -43,4 +43,19 @@ jobs:
         run: |
           ant -f AntSpringMVC/build.xml
 
-      - name: Run Sonar Sca
+      - name: Run Sonar Scanner
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          sonar-scanner \
+            -Dsonar.projectKey=jenkins-testing-antspringmvc \
+            -Dsonar.organization=jeetcl \
+            -Dsonar.sources=AntSpringMVC/src \
+            -Dsonar.tests=AntSpringMVC/src/com/mkyong/test \
+            -Dsonar.java.binaries=AntSpringMVC/war/WEB-INF/classes \
+            -Dsonar.java.libraries=AntSpringMVC/lib/*.jar \
+            -Dsonar.junit.reportPaths=AntSpringMVC/report/TEST-*.xml \
+            -Dsonar.coverage.jacoco.xmlReportPaths=AntSpringMVC/target/jacoco.xml \
+            -Dsonar.jacoco.reportPaths=AntSpringMVC/target/jacoco.exec \
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.login=${{ secrets.SONAR_TOKEN }}
