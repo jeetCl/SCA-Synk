@@ -6,7 +6,7 @@ on:
       - master
   pull_request:
     types: [opened, synchronize, reopened]
-  workflow_dispatch: # ✅ Added manual trigger  #33
+  workflow_dispatch: # ✅ Added manual trigger
 
 jobs:
   build:
@@ -53,9 +53,3 @@ jobs:
             -Dsonar.login=${{ secrets.SONAR_TOKEN }}
 
           
-
-
-
-
-
-
