@@ -6,7 +6,7 @@ on:
       - master
   pull_request:
     types: [opened, synchronize, reopened]
-  workflow_dispatch: #Added manual trigger
+  workflow_dispatch: # ✅ Added manual trigger
 
 jobs:
   build:
@@ -40,7 +40,7 @@ jobs:
           restore-keys: ${{ runner.os }}-m2
 
       - name: Build and analyze with SonarCloud
-        working-directory: jacoco-multimodule-maven   Use correct directory
+        working-directory: jacoco-multimodule-maven  # ✅ Use correct directory
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Required for PR decoration
