@@ -52,4 +52,6 @@ jobs:
 
       # ✅ Upload SARIF to GitHub Security tab
       - name: Upload SARIF report
-        uses: github/codeql
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: jacoco-multimodule-maven/snyk.sarif
