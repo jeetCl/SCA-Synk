@@ -1,13 +1,27 @@
 name: Snyk Security Scan
 on: [push, pull_request]
+
 jobs:
   snyk:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set up Java
+        uses: actions/setup-java@v3
+        with:
+          java-version: '11'
+          distribution: 'adopt'
+
+      - name: Install Maven
+        run: sudo apt-get install -y maven
+
       - name: Install Snyk
         run: npm install -g snyk
+
       - name: Authenticate Snyk
         run: snyk auth ${{ secrets.SNYK_TOKEN }}
-      - name: Test for vulnerabilities
-        run: snyk test
+
+      - name: Snyk Test All Projects
+        run: snyk test --all-projects
