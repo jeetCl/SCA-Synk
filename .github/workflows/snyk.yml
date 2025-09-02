@@ -1,34 +1,55 @@
 name: Snyk Security Scan
 
-on:
-  push:
-    branches:
-      - main
-  pull_request:
+on: [push, pull_request]
 
 jobs:
-  snyk-security:
+  snyk:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout Code
+      - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Set up Java (for Maven projects)
+      # ✅ Cache Maven dependencies for faster builds
+      - name: Cache Maven packages
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      # ✅ Set up Java
+      - name: Set up JDK 17
         uses: actions/setup-java@v3
         with:
           java-version: '17'
           distribution: 'temurin'
+          cache: maven
 
-      - name: Install Snyk CLI
+      # ✅ Build Maven project
+      - name: Build with Maven
+        run: mvn clean install -DskipTests
+
+      # ✅ Install Snyk
+      - name: Install Snyk
         run: npm install -g snyk
 
+      # ✅ Authenticate Snyk
       - name: Authenticate Snyk
         run: snyk auth ${{ secrets.SNYK_TOKEN }}
 
-      # Step 1: Test for vulnerabilities (only fail on HIGH severity)
-      - name: Snyk Test (all projects)
-        run: snyk test --all-projects --severity-threshold=high
+      # ✅ Fail build if vulnerabilities found
+      - name: Snyk Test (Fail on vuln)
+        run: snyk test --all-projects --severity-threshold=medium
 
-      # Step 2: Monitor and upload results to Snyk Dashboard
-      - name: Snyk Monitor (upload to dashboard)
+      # ✅ Send results to Snyk dashboard (does not fail build)
+      - name: Snyk Monitor (Send report)
         run: snyk monitor --all-projects
+
+      # ✅ Upload SARIF to GitHub Security tab
+      - name: Snyk SARIF Upload
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: snyk.sarif
