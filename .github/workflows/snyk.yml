@@ -5,12 +5,15 @@ on: [push, pull_request]
 jobs:
   snyk:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: jacoco-multimodule-maven  # ✅ Set correct directory
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      # Checkout code
+      - uses: actions/checkout@v3
 
-      # ✅ Cache Maven dependencies for faster builds
+      # ✅ Cache Maven dependencies
       - name: Cache Maven packages
         uses: actions/cache@v3
         with:
@@ -24,11 +27,10 @@ jobs:
       - name: Set up JDK 17
         uses: actions/setup-java@v3
         with:
-          java-version: '17'
           distribution: 'temurin'
-          cache: maven
+          java-version: '17'
 
-      # ✅ Build Maven project
+      # ✅ Build the project
       - name: Build with Maven
         run: mvn clean install -DskipTests
 
@@ -40,16 +42,14 @@ jobs:
       - name: Authenticate Snyk
         run: snyk auth ${{ secrets.SNYK_TOKEN }}
 
-      # ✅ Fail build if vulnerabilities found
-      - name: Snyk Test (Fail on vuln)
-        run: snyk test --all-projects --severity-threshold=medium
+      # ✅ Run Snyk test (fail build if vulnerabilities found)
+      - name: Snyk Test
+        run: snyk test --all-projects --severity-threshold=medium --sarif-file-output=snyk.sarif
 
-      # ✅ Send results to Snyk dashboard (does not fail build)
-      - name: Snyk Monitor (Send report)
+      # ✅ Monitor (send results to Snyk dashboard)
+      - name: Snyk Monitor
         run: snyk monitor --all-projects
 
       # ✅ Upload SARIF to GitHub Security tab
-      - name: Snyk SARIF Upload
-        uses: github/codeql-action/upload-sarif@v2
-        with:
-          sarif_file: snyk.sarif
+      - name: Upload SARIF report
+        uses: github/codeql
