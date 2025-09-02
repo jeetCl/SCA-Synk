@@ -17,11 +17,14 @@ jobs:
       - name: Install Maven
         run: sudo apt-get install -y maven
 
+      - name: Build and Install All Modules
+        run: mvn clean install -DskipTests
+
       - name: Install Snyk
         run: npm install -g snyk
 
       - name: Authenticate Snyk
         run: snyk auth ${{ secrets.SNYK_TOKEN }}
 
-      - name: Snyk Test All Projects
-        run: snyk test --all-projects
+      - name: Run Snyk Test
+        run: snyk test --all-projects --severity-threshold=low
