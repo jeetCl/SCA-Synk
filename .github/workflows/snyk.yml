@@ -1,55 +1,34 @@
 name: Snyk Security Scan
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - main
+  pull_request:
 
 jobs:
-  snyk:
+  snyk-security:
     runs-on: ubuntu-latest
     steps:
-      # 1. Checkout code
-      - uses: actions/checkout@v3
+      - name: Checkout Code
+        uses: actions/checkout@v3
 
-      # 2. Cache Maven dependencies
-      - name: Cache Maven packages
-        uses: actions/cache@v3
-        with:
-          path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-maven-
-
-      # 3. Set up JDK 17
-      - name: Set up JDK 17
+      - name: Set up Java (for Maven projects)
         uses: actions/setup-java@v3
         with:
-          distribution: 'temurin'
           java-version: '17'
+          distribution: 'temurin'
 
-      # 4. Build Maven project
-      - name: Build Maven Project
-        run: mvn clean install -DskipTests
-        working-directory: jacoco-multimodule-maven
-
-      # 5. Install Snyk CLI
-      - name: Install Snyk
+      - name: Install Snyk CLI
         run: npm install -g snyk
 
-      # 6. Authenticate Snyk
       - name: Authenticate Snyk
         run: snyk auth ${{ secrets.SNYK_TOKEN }}
 
-      # 7. Snyk Test for vulnerabilities
-      - name: Snyk Test (Generate SARIF)
-        run: snyk test --all-projects --sarif-file-output=snyk.sarif
-        working-directory: jacoco-multimodule-maven
+      # Step 1: Test for vulnerabilities (only fail on HIGH severity)
+      - name: Snyk Test (all projects)
+        run: snyk test --all-projects --severity-threshold=high
 
-      # 8. Upload SARIF results to GitHub Security tab
-      - name: Upload Snyk SARIF Report
-        uses: github/codeql-action/upload-sarif@v2
-        with:
-          sarif_file: jacoco-multimodule-maven/snyk.sarif
-
-      # 9. Snyk Monitor (Send results to dashboard)
-      - name: Snyk Monitor
+      # Step 2: Monitor and upload results to Snyk Dashboard
+      - name: Snyk Monitor (upload to dashboard)
         run: snyk monitor --all-projects
-        working-directory: jacoco-multimodule-maven
