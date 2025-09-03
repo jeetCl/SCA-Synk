@@ -1,53 +1,27 @@
-name: Sonar Scan
+name: Snyk Security Scan
 
-on:
-  push:
-    branches:
-      - master
-  pull_request:
-    types: [opened, synchronize, reopened]
-  workflow_dispatch: # ✅ Added manual trigger
+on: [push, pull_request]
 
 jobs:
-  build:
-    name: Build and Analyze with SonarCloud
+  snyk:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: jacoco-multimodule-maven # ✅ Set correct directory
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0  # Full history is needed for better analysis
+      # ✅ Checkout code
+      - uses: actions/checkout@v3
 
+      # ✅ Set up Java
       - name: Set up JDK 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v3
         with:
-          java-version: 17
-          distribution: 'zulu'
+          distribution: 'temurin'
+          java-version: '17'
 
-      - name: Cache SonarCloud packages
-        uses: actions/cache@v4
-        with:
-          path: ~/.sonar/cache
-          key: ${{ runner.os }}-sonar
-          restore-keys: ${{ runner.os }}-sonar
+      # ✅ Install parent POM so modules can resolve it
+      - name: Install parent POM
+        run: mvn install -N
 
-      - name: Cache Maven packages
-        uses: actions/cache@v4
-        with:
-          path: ~/.m2
-          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-          restore-keys: ${{ runner.os }}-m2
-
-      - name: Build and analyze with SonarCloud
-        working-directory: jacoco-multimodule-maven  # ✅ Use correct directory
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Required for PR decoration
-        run: |
-          mvn -B clean verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
-            -Dsonar.projectKey=jeetcl_maven-sonarqube \
-            -Dsonar.projectKey=Maven-SonarQube \
-            -Dsonar.organization=jeetcl \
-            -Dsonar.host.url=https://sonarcloud.io \
-            -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+      # ✅
