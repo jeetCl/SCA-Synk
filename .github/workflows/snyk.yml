@@ -10,26 +10,26 @@ jobs:
         working-directory: jacoco-multimodule-maven  # ✅ Set correct directory
 
     steps:
-      # ✅ Checkout code
+      #  Checkout code
       - uses: actions/checkout@v3
 
-      # ✅ Install Snyk CLI
+      #  Install Snyk CLI
       - name: Install Snyk
         run: npm install -g snyk
 
-      # ✅ Authenticate Snyk
+      #  Authenticate Snyk
       - name: Authenticate Snyk
         run: snyk auth ${{ secrets.SNYK_TOKEN }}
 
-      # ✅ Run Snyk test (fail build if vulnerabilities found)
+      #  Run Snyk test (fail build if vulnerabilities found)
       - name: Snyk Test
         run: snyk test --all-projects --severity-threshold=medium --sarif-file-output=snyk.sarif
 
-      # ✅ Monitor (send results to Snyk dashboard)
+      #  Monitor (send results to Snyk dashboard)
       - name: Snyk Monitor
         run: snyk monitor --all-projects
 
-      # ✅ Upload SARIF to GitHub Security tab
+      #  Upload SARIF to GitHub Security tab
       - name: Upload SARIF report
         uses: github/codeql-action/upload-sarif@v2
         with:
