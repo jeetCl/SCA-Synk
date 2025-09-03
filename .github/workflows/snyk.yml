@@ -7,29 +7,40 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: jacoco-multimodule-maven  # ✅ Set correct directory
+        working-directory: jacoco-multimodule-maven
 
     steps:
-      #  Checkout code
+      # 1. Checkout code
       - uses: actions/checkout@v3
 
-      #  Install Snyk CLI
+      # 2. Setup Java for Maven
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      # 3. Build and install parent POM locally (so child modules can resolve it)
+      - name: Build Project and Install Parent POM
+        run: mvn clean install -DskipTests
+
+      # 4. Install Snyk CLI
       - name: Install Snyk
         run: npm install -g snyk
 
-      #  Authenticate Snyk
+      # 5. Authenticate Snyk
       - name: Authenticate Snyk
         run: snyk auth ${{ secrets.SNYK_TOKEN }}
 
-      #  Run Snyk test (fail build if vulnerabilities found)
+      # 6. Run Snyk test (with SARIF output)
       - name: Snyk Test
         run: snyk test --all-projects --severity-threshold=medium --sarif-file-output=snyk.sarif
 
-      #  Monitor (send results to Snyk dashboard)
+      # 7. Monitor (send results to Snyk dashboard)
       - name: Snyk Monitor
         run: snyk monitor --all-projects
 
-      #  Upload SARIF to GitHub Security tab
+      # 8. Upload SARIF to GitHub Security tab
       - name: Upload SARIF report
         uses: github/codeql-action/upload-sarif@v2
         with:
